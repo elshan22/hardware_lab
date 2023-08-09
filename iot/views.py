@@ -42,7 +42,7 @@ class RegisterView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class LogoutAPIView(APIView):
+class LogoutView(APIView):
     serializer_class = LogoutSerializer
     permission_classes = [AllowAny]
 
