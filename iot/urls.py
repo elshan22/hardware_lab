@@ -1,6 +1,6 @@
 from django.urls import path
-from .views import DeviceStateView
+from .views import LoginView
 
 urlpatterns = [
-    path('devices/<int:device_id>/state/', DeviceStateView.as_view(), name='device-state'),
+    path('login/', LoginView.as_view())
 ]

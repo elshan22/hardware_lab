@@ -1,28 +1,53 @@
 from rest_framework import views, status
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from .models import Device, DeviceState
-from .serializers import DeviceStateSerializer
+from rest_framework.views import APIView
 
-class DeviceStateView(views.APIView):
-    def post(self, request, device_id):
-        try:
-            device = Device.objects.get(pk=device_id)
-        except Device.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+from .serializers import AuthenticationSerializer, LogoutSerializer
+import paho.mqtt.client as mqtt
+from rest_framework_simplejwt.views import TokenObtainPairView
 
-        new_state = request.data.get('state', None)
-        if new_state is None:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
 
-        DeviceState.objects.create(device=device, state=new_state)
-        return Response(status=status.HTTP_201_CREATED)
+# def on_connect(client, userdata, flags, rc):
+#     print("Connected with result code", rc)
+#     client.subscribe("your_topic")
+#
+#
+# def on_message(client, userdata, msg):
+#     print("Received message:", msg.payload.decode('utf-8'))
+#
+#
+# client = mqtt.Client()
+# client.on_connect = on_connect
+# client.on_message = on_message
+# client.connect("1.1.1.1", 1700, 60)
+# client.loop_forever()
 
-    def get(self, request, device_id):
-        try:
-            device = Device.objects.get(pk=device_id)
-        except Device.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
 
-        latest_state = DeviceState.objects.filter(device=device).latest('timestamp')
-        serializer = DeviceStateSerializer(latest_state)
-        return Response(serializer.data)
+class LoginView(TokenObtainPairView):
+    serializer_class = AuthenticationSerializer
+
+
+class RegisterView(APIView):
+    serializer_class = AuthenticationSerializer
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            if user:
+                json = serializer.data
+                return Response(json, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LogoutAPIView(APIView):
+    serializer_class = LogoutSerializer
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
