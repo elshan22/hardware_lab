@@ -125,6 +125,8 @@ void loop() {
     last_temp[0] = new_data;
     mean = get_mean();
     sigma = get_std(mean);
-    client.publish("raspi/sensors", String("{\"room\": 1, \"node_id\": \"" + WiFi.macAddress() + "\", \"current_temperature\": " + String(new_data) + ", \"temperature_mean\": " + String(mean) + ", \"recent_changes\": " + String(sigma) + "}").c_str());
+    client.publish("raspi/sensors", String("{\"room\": 1, \"node_id\": \"" + WiFi.macAddress() +
+                   "\", \"current_temperature\": " + String(new_data) + ", \"temperature_mean\": " +
+                   String(mean) + ", \"recent_changes\": " + String(sigma) + "}").c_str());
   }
 }
